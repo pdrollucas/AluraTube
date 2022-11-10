@@ -1,19 +1,18 @@
 import React from "react";
 import config from "../config.json";
 import styled from "styled-components";
-import { CSSReset } from "../src/components/CSSReset";
 import Menu from "../src/components/menu";
 import { StyledTimeline } from "../src/components/Timeline";
 
 function HomePage() {
-    const estilosHomePage = { 
-        // backgroundColor:"red" 
-    };
     const [valorDoFiltro, setValorDoFiltro] = React.useState(""); 
     return (
         <>
-            <CSSReset />
-            <div style={estilosHomePage}>
+            <div style={{
+                display:"flex",
+                flexDirection: "column",
+                flex: 1,
+            }}>
                 <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro}/>
                 <Header></Header>
                 <TimeLine searchValue={valorDoFiltro} playlists={config.playlists}></TimeLine>
@@ -22,7 +21,7 @@ function HomePage() {
     );
   }
 
-  export default HomePage
+  export default HomePage;
 
  /* 
  function Menu (){
@@ -35,6 +34,9 @@ function HomePage() {
 */
 
 const StyledHeader = styled.div `
+
+    background-color: ${({ theme }) => theme.backgroundLevel1};
+
     img {
         width: 80px;
         height: 80px;
