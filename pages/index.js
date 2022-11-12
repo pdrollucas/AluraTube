@@ -41,7 +41,7 @@ function HomePage() {
             }}>
                 <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro}/>
                 <Header></Header>
-                <TimeLine searchValue={valorDoFiltro} /*playlists={config.playlists}*/ playlists = {playlists}></TimeLine>
+                <TimeLine searchValue={valorDoFiltro} playlists={config.playlists} /* playlists = {playlists} */ ></TimeLine>
             </div>
         </>
     );
