@@ -4,12 +4,15 @@ import styled from "styled-components";
 import Menu from "../src/components/menu";
 import { StyledTimeline } from "../src/components/Timeline";
 import { createClient } from '@supabase/supabase-js';
+import { videoService } from "../src/services/videoService";
+import Link from "next/link";
 
 const PROJECT_URL = "https://rmdeiqldtsnhuiuuffmm.supabase.co";
 const PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZGVpcWxkdHNuaHVpdXVmZm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjgxOTQyMTEsImV4cCI6MTk4Mzc3MDIxMX0.4KhDXEAcyYHOjdbOk3wMTcNiy1F_M5RzR3eBOvBieFI";
 const supabase = createClient(PROJECT_URL, PUBLIC_KEY);
 
 function HomePage() {
+    const service = videoService();
     const [valorDoFiltro, setValorDoFiltro] = React.useState(""); 
     //const playlists = {
         //"jogos": [],
@@ -17,8 +20,7 @@ function HomePage() {
     const [playlists, setPlaylists] = React.useState({});
 
     React.useEffect(() => {
-        supabase.from("video")
-                .select("*")
+        service.getAllVideos()
                 .then((dados) => {
                     const novasPlaylists = {...playlists}
                     dados.data.forEach((video) => {
@@ -41,7 +43,7 @@ function HomePage() {
             }}>
                 <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro}/>
                 <Header></Header>
-                <TimeLine searchValue={valorDoFiltro} playlists={config.playlists} /* playlists = {playlists} */ ></TimeLine>
+                <TimeLine searchValue={valorDoFiltro} playlists={playlists} /* ou playlists={config.playlists} */ ></TimeLine>
             </div>
         </>
     );
@@ -107,6 +109,7 @@ function Header (){
         <StyledTimeline>
             {playlistNames.map((playlistName) => {
                 const videos = propriedades.playlists[playlistName];
+                let countVideos = 0;
 
                 return (
                     <section key={playlistName}>
@@ -117,15 +120,32 @@ function Header (){
                                 const searchValueNormalized = searchValue.toLowerCase();
                                 return titleNormalized.includes(searchValueNormalized)
                             }).map ((video) => {
+                                countVideos = countVideos + 1;
+                                let idVideo;
+                                const linkFormat =
+                                  /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                                const match = video.url.match(linkFormat);
+                                if (match && match[2].length == 11) {
+                                    idVideo = match[2];
+                                }
                                 return (
-                                    <a key={video.url} href={video.url}>
-                                        <img src={video.thumb}></img>
-                                        <span>
-                                            {video.title}
-                                        </span>
-                                    </a>
+                                    <Link 
+                                        key={video.url} 
+                                        href={{
+                                            pathname: "/video",
+                                            query: {
+                                                v: idVideo,
+                                                title: video.title,
+                                            },
+                                        }}>
+                                            <img src={video.thumb} />
+                                            <span>
+                                                {video.title}
+                                            </span>
+                                    </Link>
                                 )
                             })}
+                            {countVideos === 0 ? "Nenhum video encontrado" : ""}
                         </div>
                     </section>
                 )

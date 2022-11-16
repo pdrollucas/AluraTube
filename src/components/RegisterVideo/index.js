@@ -1,6 +1,8 @@
 import React from "react";
+import { useRouter } from 'next/router';
 import { StyledRegisterVideo } from "./styles";
 import { createClient } from '@supabase/supabase-js';
+import config from "../../../config.json";
 
 // Custom Hook:
 function useForm (propsDoForm){
@@ -30,7 +32,9 @@ const supabase = createClient(PROJECT_URL, PUBLIC_KEY);
 // Pesquisar sobre GitHub Copilot e Tabnine (extensões)
 
 function getThumbnail(url){
-    return `https://img.youtube.com/vi/${url.split("v=")[1]/hqdefault.jpg}`;
+    const youTubeId = url.replace(/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/, '$7');
+    const thumbnail = `https://img.youtube.com/vi/${youTubeId}/hqdefault.jpg`;
+    return thumbnail;
 }
 
 /* function getVideoId (url){
@@ -45,9 +49,12 @@ function getThumbnail(url){
 export default function RegisterVideo (){
 
     const formCadastro = useForm(
-        {initialValues: { titulo: "", url: "", thumbnail: ""}
+        {initialValues: { titulo: "", url: ""}
     });
     const [formVisivel, setFormVisivel] = React.useState(false);
+    const playlistNames = Object.keys(config.playlists);
+    const router = useRouter();
+
     return (
         <StyledRegisterVideo>
             <button className="add-video" onClick={() => setFormVisivel(true) }>
@@ -65,7 +72,15 @@ export default function RegisterVideo (){
                         title: formCadastro.values.titulo,
                         url: formCadastro.values.url,
                         thumb: getThumbnail(formCadastro.values.url),
-                        playlist: "jogos",
+                        playlist: formCadastro.values.playlist,
+                    })
+
+                    .then((oQueVeio) => {
+                        console.log (oQueVeio);
+                        router.reload()
+                    })
+                    .catch ((err) => {
+                        console.log (err);
                     })
 
                     setFormVisivel(false);
@@ -81,6 +96,7 @@ export default function RegisterVideo (){
                             name="titulo"
                             value={formCadastro.values.titulo} 
                             onChange={formCadastro.handleChange}
+                            required
                         />
 
                         <input 
@@ -88,18 +104,25 @@ export default function RegisterVideo (){
                             name="url"
                             value={formCadastro.values.url} 
                             onChange={formCadastro.handleChange}
+                            required
                         />
 
-                        <input 
-                            placeholder="URL da thumbnail" 
-                            name="thumbnail"
-                            value={formCadastro.values.thumbnail} 
-                            onChange={formCadastro.handleChange}
-                        />
+                        <select name="playlist" defaultValue="" onChange={formCadastro.handleChange} required>
+                            <option value="" disabled>
+                                Selecione uma playlist
+                            </option>
+                            {playlistNames.map((playlistName) => {
+                                return (
+                                    <option key={playlistName} value={playlistName}>{playlistName}</option>
+                                )
+                            })}
+                            </select>
 
                         <button type="submit">
                             Cadastrar
                         </button>
+
+                        {formCadastro.values.url.length > 11 ? <> <img className="thumbPreview" src={getThumbnail(formCadastro.values.url)}  /> </>  : null }
                     </div>
                 </form>
             ): false }
